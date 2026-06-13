@@ -6,13 +6,13 @@ A React-based Student Enrollment Portal built with Vite that demonstrates modern
 
 Add your deployed link here:
 
-- Live Site: https://your-live-link.com
+- Live Site: 
 
 ## Repository
 
 Add your GitHub repository link here:
 
-- GitHub: https://github.com/your-username/student-enrollment-portal
+- GitHub: https://github.com/Eduaina/Enrollment-App
 
 ## Features
 

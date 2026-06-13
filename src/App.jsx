@@ -1,122 +1,141 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from "react";
+import "./App.css";
+import Header from "./components/Header";
+import Button from "./components/Button";
+import ClassButton from "./components/ClassButton";
+import StudentList from "./components/StudentList";
+import EnrollForm from "./components/EnrollForm";
+import StatusMessage from "./components/StatusMessage";
 
-function App() {
-  const [count, setCount] = useState(0)
+const TRACKS = ["Frontend", "Backend", "Mobile", "Data"];
+
+const SEED_STUDENTS = [
+  {
+    id: "seed-1",
+    firstName: "Amara",
+    lastName: "Johnson",
+    email: "amara@kodecamp.dev",
+    track: "Frontend",
+    score: 92,
+    isActive: true,
+    avatar: "https://i.pravatar.cc/150?img=1",
+  },
+  {
+    id: "seed-2",
+    firstName: "Chidi",
+    lastName: "Okafor",
+    email: "chidi@kodecamp.dev",
+    track: "Backend",
+    score: 67,
+    isActive: false,
+    avatar: "https://i.pravatar.cc/150?img=3",
+  },
+];
+
+const getGrade = (score) => {
+  if (score >= 80) return "A";
+  if (score >= 70) return "B";
+  if (score >= 60) return "C";
+  if (score >= 50) return "D";
+  return "F";
+};
+
+const getAverage = (list) =>
+  list.length === 0
+    ? 0
+    : list.reduce((total, s) => total + s.score, 0) / list.length;
+
+const App = () => {
+  const [students, setStudents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [fetchTrigger, setFetchTrigger] = useState(0);
+
+  useEffect(() => {
+    const fetchStudents = async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(
+          "https://randomuser.me/api/?results=6&nat=us,gb"
+        );
+
+        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+
+        const data = await response.json();
+
+        const fetched = data.results.map((user, index) => ({
+          id: user.login.uuid,
+          firstName: user.name.first,
+          lastName: user.name.last,
+          email: user.email,
+          avatar: user.picture.medium,
+          track: TRACKS[index % TRACKS.length],
+          score: Math.floor(Math.random() * 61) + 40, // 40–100
+          isActive: true,
+        }));
+
+        setStudents([...SEED_STUDENTS, ...fetched]);
+      } catch (err) {
+        setError(err.message);
+        setStudents(SEED_STUDENTS);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudents();
+  }, [fetchTrigger]);
+
+  const handleEnroll = (newStudent) => {
+    setStudents((prev) => [newStudent, ...prev]);
+  };
+
+  const handleRefresh = () => {
+    setFetchTrigger((n) => n + 1);
+  };
+
+  const enriched = students.map((s) => ({ ...s, grade: getGrade(s.score) }));
+  const average = getAverage(students);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="app">
+      <Header
+        title="KodeCamp 6.0 — Enrollment Portal"
+        studentCount={students.length}
+        averageScore={average}
+      />
 
-      <div className="ticks"></div>
+      <main className="main-content">
+        <EnrollForm tracks={TRACKS} onEnroll={handleEnroll} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <section className="roster-section">
+          {loading ? (
+            <StatusMessage type="loading" />
+          ) : (
+            <>
+              {error && <StatusMessage type="error" />}
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
-}
+              <StudentList students={enriched} title="Student Roster">
+                <div className="roster-footer">
+                  <p className="footer-text">
+                    End of roster — {students.length} total
+                  </p>
+                  {/* ClassButton rendered here — demonstrates class component pattern */}
+                  <ClassButton
+                    title="↺ Refresh Roster"
+                    onClick={handleRefresh}
+                    className="btn-refresh"
+                  />
+                </div>
+              </StudentList>
+            </>
+          )}
+        </section>
+      </main>
+    </div>
+  );
+};
 
-export default App
+export default App;
