@@ -4,7 +4,9 @@ import StatBar from "../components/StatBar";
 
 const StudentDetailPage = ({ students }) => {
   const { id } = useParams();
-  const student = students.find((s) => s.id === id);
+  const student = students.find(
+  (student) => String(student.id) === String(id)
+);
 
   if (!student) {
     return (
