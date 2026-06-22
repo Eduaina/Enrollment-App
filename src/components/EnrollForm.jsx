@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import Button from "./Button";
 
-const EnrollForm = ({ tracks, onEnroll }) => {
+const EnrollForm = ({ tracks, onEnroll, onSuccess }) => {
   // CONTROLLED inputs — value lives in React state
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
@@ -25,11 +25,6 @@ const EnrollForm = ({ tracks, onEnroll }) => {
     const emailVal = emailRef.current?.value ?? "";
     if (!emailVal.includes("@")) newErrors.email = "Email must contain '@'.";
     return newErrors;
-  };
-
-  const hasErrors = () => {
-    const e = validate();
-    return Object.keys(e).length > 0;
   };
 
   const handleSubmit = (event) => {
@@ -68,10 +63,14 @@ const EnrollForm = ({ tracks, onEnroll }) => {
     // Reset uncontrolled fields via refs
     if (emailRef.current) emailRef.current.value = "";
     if (isActiveRef.current) isActiveRef.current.checked = true;
+
+    // Trigger redirect (called by EnrollPage via useNavigate)
+    if (onSuccess) onSuccess();
   };
 
   const scoreNum = Number(score);
   const previewReady = firstName || lastName;
+  const formHasErrors = Object.keys(errors).length > 0;
 
   return (
     <div className="enroll-form-wrapper">
@@ -92,7 +91,9 @@ const EnrollForm = ({ tracks, onEnroll }) => {
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
               />
-              {errors.firstName && <span className="field-error">{errors.firstName}</span>}
+              {errors.firstName && (
+                <span className="field-error">{errors.firstName}</span>
+              )}
             </div>
 
             <div className="form-group">
@@ -104,7 +105,9 @@ const EnrollForm = ({ tracks, onEnroll }) => {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
               />
-              {errors.lastName && <span className="field-error">{errors.lastName}</span>}
+              {errors.lastName && (
+                <span className="field-error">{errors.lastName}</span>
+              )}
             </div>
           </div>
 
@@ -135,7 +138,9 @@ const EnrollForm = ({ tracks, onEnroll }) => {
                 value={score}
                 onChange={(e) => setScore(e.target.value)}
               />
-              {errors.score && <span className="field-error">{errors.score}</span>}
+              {errors.score && (
+                <span className="field-error">{errors.score}</span>
+              )}
             </div>
           </div>
 
@@ -143,11 +148,7 @@ const EnrollForm = ({ tracks, onEnroll }) => {
           <div className="preview-line">
             {previewReady ? (
               <span>
-                Preview:{" "}
-                <strong>
-                  {firstName} {lastName}
-                </strong>{" "}
-                — {track}
+                Preview: <strong>{firstName} {lastName}</strong> — {track}
                 {score !== "" && !isNaN(scoreNum) ? ` (${scoreNum})` : ""}
               </span>
             ) : (
@@ -171,16 +172,14 @@ const EnrollForm = ({ tracks, onEnroll }) => {
               defaultValue=""
               ref={emailRef}
             />
-            {errors.email && <span className="field-error">{errors.email}</span>}
+            {errors.email && (
+              <span className="field-error">{errors.email}</span>
+            )}
           </div>
 
           <div className="form-group form-group--checkbox">
             <label className="checkbox-label">
-              <input
-                type="checkbox"
-                defaultChecked={true}
-                ref={isActiveRef}
-              />
+              <input type="checkbox" defaultChecked={true} ref={isActiveRef} />
               Active
             </label>
           </div>
@@ -189,7 +188,7 @@ const EnrollForm = ({ tracks, onEnroll }) => {
         <Button
           title="Enroll Student"
           className="btn-enroll"
-          disabled={hasErrors() && Object.keys(errors).length > 0}
+          disabled={formHasErrors}
         />
       </form>
     </div>

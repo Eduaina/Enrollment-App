@@ -39,19 +39,43 @@ Add your GitHub repository link here:
 
 ```
 src/
-├── App.jsx
-├── App.css
-└── components/
-    ├── Header.jsx
-    ├── Button.jsx
-    ├── ClassButton.jsx
-    ├── StudentCard.jsx
-    ├── StudentList.jsx
-    ├── EnrollForm.jsx
-    └── StatusMessage.jsx
+├── App.jsx               ← Routes + lifted roster state
+├── App.css               ← All styles
+├── main.jsx              ← BrowserRouter wraps <App />
+├── components/
+│   ├── Navbar.jsx        ← NavLink nav, shows on every page
+│   ├── Badge.jsx
+│   ├── Button.jsx        ← Functional component
+│   ├── ClassButton.jsx   ← Class component (refresh button)
+│   ├── EnrollForm.jsx    ← Controlled + uncontrolled inputs
+│   ├── StatBar.jsx
+│   ├── StatusMessage.jsx
+│   ├── StudentCard.jsx   ← Name links to /students/:id
+│   └── StudentList.jsx
+└── pages/
+    ├── HomePage.jsx          → /
+    ├── StudentDetailPage.jsx → /students/:id
+    ├── EnrollPage.jsx        → /enroll
+    └── NotFoundPage.jsx      → * (catch-all 404)
 ```
 
-## Getting Started
+---
+
+## Routing
+
+| Route | Component | Description |
+|---|---|---|
+| `/` | `HomePage` | Roster grid + refresh button |
+| `/students/:id` | `StudentDetailPage` | Full profile for one student |
+| `/enroll` | `EnrollPage` | Enroll form; redirects to `/` on success |
+| `*` | `NotFoundPage` | Friendly 404 catch-all |
+
+**Key decisions:**
+- `<BrowserRouter>` wraps `<App />` in `main.jsx` — the app never sees a HashRouter.
+- `<Navbar />` is rendered **outside** `<Routes>` so it persists across every route.
+- Roster state lives in `App.jsx` so a student enrolled on `/enroll` immediately appears on `/` after `useNavigate("/")` fires.
+- `<NavLink>` with an `isActive` callback applies `.nav-link--active` on the current route; the `end` prop on the Home link prevents it staying active when on child routes.
+- `<Link>` (never `<a href>`) is used for all internal navigation — no full-page reloads.
 
 ### Prerequisites
 
@@ -80,6 +104,14 @@ npm run dev
 
 Open the local URL displayed in your terminal.
 
+## Getting Started
+
+```bash
+npm install
+npm install react-router-dom
+npm run dev
+```
+
 ## API Used
 
 This project uses the Random User API:
@@ -87,6 +119,17 @@ This project uses the Random User API:
 https://randomuser.me/api/?results=6&nat=us,gb
 
 The application fetches student information when it loads and maps the API response into the student data structure used throughout the app.
+
+## Loading/Error Handling
+
+Each result provides `name.first/last`, `email`, `picture.medium`, and `login.uuid` (used as `id`). Each student is assigned a random score (40–100) and a track from `TRACKS` by index.
+
+- `useState(true)` for `loading` — shows `<StatusMessage type="loading" />` while in-flight.
+- `try/catch/finally` wraps the `fetch`; a non-OK response throws (`if (!response.ok) throw ...`).
+- On failure, `error` state is set, `<StatusMessage type="error" />` is shown, and `SEED_STUDENTS` is still displayed — the app never crashes.
+- A `fetchTrigger` counter increments on "Refresh", re-running the `useEffect`.
+
+---
 
 ## Component-Based Architecture
 
