@@ -24,6 +24,10 @@ const Navbar = ({ studentCount, averageScore }) => {
           <NavLink to="/enroll" className={navClass}>
             Enroll
           </NavLink>
+
+          {/* <NavLink to="/this-is-a-broken-link-test" className={navClass}>
+            Test 404
+          </NavLink> */}
         </nav>
       </div>
     </header>
